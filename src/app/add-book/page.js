@@ -1,12 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BookPlus, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
+import { authClient } from '@/lib/auth-client';
+
 const AddBookPage = () => {
   const router = useRouter();
+
+  const { data: session, isPending } = authClient.useSession();
+
+  useEffect(() => {
+    if (!isPending && !session) {
+      Router.replace('/sign-in');
+    }
+  }, [session, isPending, router]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -36,13 +46,21 @@ const AddBookPage = () => {
     setLoading(true);
     setError('');
 
+    const bookData = {
+      ...formData,
+      addedBy: {
+        name: session.user.name,
+        email: session.user.email,
+      },
+    };
+
     try {
       const response = await fetch('http://localhost:5000/books', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(bookData),
       });
 
       if (!response.ok) {
@@ -168,6 +186,33 @@ const AddBookPage = () => {
                 placeholder="Paste your book image URL"
                 required
                 className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-[#173D35]"
+              />
+            </div>
+
+            {/* Added By */}
+            <div>
+              <label className="mb-2 block font-semibold text-[#173D35]">
+                Added By
+              </label>
+
+              <input
+                type="text"
+                value={session?.user?.name || ''}
+                readOnly
+                className="w-full rounded-xl border border-gray-200 bg-gray-100 px-4 py-3"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block font-semibold text-[#173D35]">
+                User Email
+              </label>
+
+              <input
+                type="email"
+                value={session?.user?.email || ''}
+                readOnly
+                className="w-full rounded-xl border border-gray-200 bg-gray-100 px-4 py-3"
               />
             </div>
 
