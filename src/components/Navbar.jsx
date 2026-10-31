@@ -60,17 +60,17 @@ const Navbar = () => {
           {!isLoggedIn ? (
             <>
               <Link
-                href="/login"
+                href="/sign-in"
                 className="rounded-lg px-4 py-2 font-semibold text-[#173d35] hover:bg-[#e9e2d5]"
               >
                 Login
               </Link>
 
               <Link
-                href="/register"
+                href="/sign-up"
                 className="rounded-lg bg-[#173d35] px-5 py-2.5 font-semibold text-white transition hover:bg-[#24594d]"
               >
-                Register
+                SignUp
               </Link>
             </>
           ) : (
@@ -153,16 +153,16 @@ const Navbar = () => {
             {!isLoggedIn ? (
               <div className="flex gap-3">
                 <Link
-                  href="/login"
+                  href="/sign-in"
                   className="rounded-lg border border-[#173d35] px-4 py-2"
                 >
                   Login
                 </Link>
                 <Link
-                  href="/register"
+                  href="/sign-up"
                   className="rounded-lg bg-[#173d35] px-4 py-2 text-white"
                 >
-                  Register
+                  SignUp
                 </Link>
               </div>
             ) : (
