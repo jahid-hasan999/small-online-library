@@ -1,34 +1,52 @@
-'use client';
 
-import Link from 'next/link';
-import { useState } from 'react';
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+
 import {
   BookOpen,
   Menu,
   X,
   User,
   LogOut,
-  Settings,
   ChevronDown,
-} from 'lucide-react';
+} from "lucide-react";
 
 const Navbar = () => {
-  // Temporary demo login state
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const router = useRouter();
+
+  const { data: session, isPending } = authClient.useSession();
+
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
-    { name: 'Home', href: '/' },
-    { name: 'All Books', href: '/books' },
-    { name: 'Add Book', href: '/add-book', private: true },
-    { name: 'My Books', href: '/my-books', private: true },
-    { name: 'My Borrows', href: '/my-borrows', private: true },
+    { name: "Home", href: "/" },
+    { name: "All Books", href: "/books" },
+    { name: "Add Book", href: "/add-book", private: true },
+    { name: "My Books", href: "/my-books", private: true },
+    { name: "My Borrows", href: "/my-borrows", private: true },
   ];
+
+  const handleLogout = async () => {
+    await authClient.signOut();
+
+    setProfileOpen(false);
+    setMobileOpen(false);
+
+    router.push("/sign-in");
+    router.refresh();
+  };
+
+  const isLoggedIn = !!session?.user;
 
   return (
     <header className="sticky top-0 z-50 border-b border-[#e7e1d5] bg-[#f5f0e6]/95 backdrop-blur-md">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8">
+
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#173d35] text-white">
@@ -43,8 +61,8 @@ const Navbar = () => {
         {/* Desktop Navigation */}
         <div className="hidden items-center gap-7 lg:flex">
           {navLinks
-            .filter(link => isLoggedIn || !link.private)
-            .map(link => (
+            .filter((link) => isLoggedIn || !link.private)
+            .map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
@@ -57,7 +75,7 @@ const Navbar = () => {
 
         {/* Right Side */}
         <div className="hidden items-center gap-3 lg:flex">
-          {!isLoggedIn ? (
+          {!isPending && !isLoggedIn ? (
             <>
               <Link
                 href="/sign-in"
@@ -73,20 +91,20 @@ const Navbar = () => {
                 SignUp
               </Link>
             </>
-          ) : (
+          ) : isLoggedIn ? (
             <div className="relative">
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
                 className="flex items-center gap-2 rounded-full border border-[#ded6c8] bg-white p-1.5 pr-3"
               >
                 <img
-                  src="https://i.pravatar.cc/100?img=12"
+                  src={session.user.image || "https://i.pravatar.cc/100"}
                   alt="User profile"
                   className="h-9 w-9 rounded-full object-cover"
                 />
 
                 <span className="text-sm font-semibold text-[#173d35]">
-                  Jahid Hasan
+                  {session.user.name}
                 </span>
 
                 <ChevronDown size={16} />
@@ -95,12 +113,18 @@ const Navbar = () => {
               {profileOpen && (
                 <div className="absolute right-0 mt-3 w-52 rounded-xl border border-[#e7e1d5] bg-white p-2 shadow-xl">
                   <div className="border-b border-gray-100 px-3 py-2">
-                    <p className="font-semibold text-[#173d35]">Jahid Hasan</p>
-                    <p className="text-xs text-gray-500">jahid@example.com</p>
+                    <p className="font-semibold text-[#173d35]">
+                      {session.user.name}
+                    </p>
+
+                    <p className="break-all text-xs text-gray-500">
+                      {session.user.email}
+                    </p>
                   </div>
 
                   <Link
                     href="/profile"
+                    onClick={() => setProfileOpen(false)}
                     className="flex items-center gap-2 rounded-lg px-3 py-3 text-sm hover:bg-[#f5f0e6]"
                   >
                     <User size={17} />
@@ -108,10 +132,7 @@ const Navbar = () => {
                   </Link>
 
                   <button
-                    onClick={() => {
-                      setIsLoggedIn(false);
-                      setProfileOpen(false);
-                    }}
+                    onClick={handleLogout}
                     className="flex w-full items-center gap-2 rounded-lg px-3 py-3 text-sm text-red-600 hover:bg-red-50"
                   >
                     <LogOut size={17} />
@@ -120,7 +141,7 @@ const Navbar = () => {
                 </div>
               )}
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Mobile Menu Button */}
@@ -138,8 +159,8 @@ const Navbar = () => {
         <div className="border-t border-[#e7e1d5] bg-[#f5f0e6] px-5 py-5 lg:hidden">
           <div className="flex flex-col gap-4">
             {navLinks
-              .filter(link => isLoggedIn || !link.private)
-              .map(link => (
+              .filter((link) => isLoggedIn || !link.private)
+              .map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
@@ -150,50 +171,61 @@ const Navbar = () => {
                 </Link>
               ))}
 
-            {!isLoggedIn ? (
+            {!isPending && !isLoggedIn ? (
               <div className="flex gap-3">
                 <Link
                   href="/sign-in"
+                  onClick={() => setMobileOpen(false)}
                   className="rounded-lg border border-[#173d35] px-4 py-2"
                 >
                   Login
                 </Link>
+
                 <Link
                   href="/sign-up"
+                  onClick={() => setMobileOpen(false)}
                   className="rounded-lg bg-[#173d35] px-4 py-2 text-white"
                 >
                   SignUp
                 </Link>
               </div>
-            ) : (
+            ) : isLoggedIn ? (
               <>
                 <div className="flex items-center gap-3 border-t border-[#ded6c8] pt-4">
                   <img
-                    src="https://i.pravatar.cc/100?img=12"
+                    src={session.user.image || "https://i.pravatar.cc/100"}
                     alt="User profile"
-                    className="h-10 w-10 rounded-full"
+                    className="h-10 w-10 rounded-full object-cover"
                   />
-                  <span className="font-semibold text-[#173d35]">
-                    Jahid Hasan
-                  </span>
+
+                  <div>
+                    <p className="font-semibold text-[#173d35]">
+                      {session.user.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {session.user.email}
+                    </p>
+                  </div>
                 </div>
 
-                <Link href="/profile" onClick={() => setMobileOpen(false)}>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2"
+                >
+                  <User size={17} />
                   My Profile
                 </Link>
 
                 <button
-                  onClick={() => {
-                    setIsLoggedIn(false);
-                    setMobileOpen(false);
-                  }}
+                  onClick={handleLogout}
                   className="flex items-center gap-2 text-left text-red-600"
                 >
                   <LogOut size={17} />
                   Logout
                 </button>
               </>
-            )}
+            ) : null}
           </div>
         </div>
       )}
