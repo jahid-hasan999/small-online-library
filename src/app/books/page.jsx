@@ -9,7 +9,17 @@ const BooksPage = () => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
 
+  // Fetch Category from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const category = params.get('category');
+
+    setSelectedCategory(category || '');
+  }, []);
+
+  // Fetch All Books
   useEffect(() => {
     const fetchBooks = async () => {
       try {
@@ -32,6 +42,19 @@ const BooksPage = () => {
     fetchBooks();
   }, []);
 
+  // Filter Books by Category
+  const filteredBooks = selectedCategory
+    ? books.filter(
+        book => book.category?.toLowerCase() === selectedCategory.toLowerCase(),
+      )
+    : books;
+
+  // Clear Category Filter
+  const handleClearFilter = () => {
+    setSelectedCategory('');
+    window.history.pushState({}, '', '/books');
+  };
+
   return (
     <section className="min-h-screen bg-[#F5F0E6] px-4 py-12 md:px-8">
       <div className="mx-auto max-w-7xl">
@@ -46,6 +69,22 @@ const BooksPage = () => {
           </p>
         </div>
 
+        {/* Selected Category */}
+        {selectedCategory && (
+          <div className="mb-8 flex items-center justify-center gap-3">
+            <p className="text-[#173D35]">
+              Category: <span className="font-bold">{selectedCategory}</span>
+            </p>
+
+            <button
+              onClick={handleClearFilter}
+              className="rounded-lg bg-[#173D35] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#D5A85C] hover:text-[#173D35]"
+            >
+              Clear Filter
+            </button>
+          </div>
+        )}
+
         {/* Loading */}
         {loading && (
           <p className="py-10 text-center text-[#173D35]">Loading books...</p>
@@ -54,23 +93,29 @@ const BooksPage = () => {
         {/* Error */}
         {error && <p className="py-10 text-center text-red-600">{error}</p>}
 
-        {/* Empty */}
-        {!loading && !error && books.length === 0 && (
+        {/* Empty Books */}
+        {!loading && !error && filteredBooks.length === 0 && (
           <div className="py-16 text-center">
             <BookOpen size={45} className="mx-auto text-[#173D35]" />
+
             <h2 className="mt-4 text-xl font-semibold text-[#173D35]">
-              No Books Available
+              {selectedCategory
+                ? `No Books Found in ${selectedCategory}`
+                : 'No Books Available'}
             </h2>
+
             <p className="mt-2 text-gray-600">
-              Add your first book to the library.
+              {selectedCategory
+                ? 'Try another category or clear the filter.'
+                : 'Add your first book to the library.'}
             </p>
           </div>
         )}
 
         {/* Books Grid */}
-        {!loading && !error && books.length > 0 && (
+        {!loading && !error && filteredBooks.length > 0 && (
           <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3">
-            {books.map(book => (
+            {filteredBooks.map(book => (
               <div
                 key={book._id}
                 className="overflow-hidden rounded-2xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl"
