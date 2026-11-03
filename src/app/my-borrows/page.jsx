@@ -45,10 +45,14 @@ const MyBorrowsPage = () => {
           },
         );
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch borrowed books');
-        }
+       if (!response.ok) {
+         const errorData = await response.json();
 
+         console.log('Status:', response.status);
+         console.log('Backend response:', errorData);
+
+         throw new Error('Failed to fetch borrowed books');
+       }
         const data = await response.json();
 
         const myBorrows = data.filter(

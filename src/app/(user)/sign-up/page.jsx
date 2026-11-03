@@ -59,7 +59,7 @@ export default function SignUpPage() {
    }
 
    if (data) {
-     router.push('/sign-in');
+     router.push('/');
    }
  };
 

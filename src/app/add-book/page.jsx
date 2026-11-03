@@ -7,7 +7,6 @@ import Link from 'next/link';
 
 import { authClient } from '@/lib/auth-client';
 import getTokenClient from '@/lib/getTokenClient';
-import { Router } from 'next/router';
 
 
 const AddBookPage = () => {
@@ -17,7 +16,7 @@ const AddBookPage = () => {
 
   useEffect(() => {
     if (!isPending && !session) {
-      Router.replace('/sign-in');
+      router.replace('/sign-in?callbackURL=/add-book');
     }
   }, [session, isPending, router]);
 
@@ -58,8 +57,8 @@ const AddBookPage = () => {
     const bookData = {
       ...formData,
       addedBy: {
-        name: session.user.name,
-        email: session.user.email,
+        name: session?.user?.name,
+        email: session?.user?.email,
       },
     };
 
