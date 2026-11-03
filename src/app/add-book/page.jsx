@@ -7,6 +7,8 @@ import Link from 'next/link';
 
 import { authClient } from '@/lib/auth-client';
 import getTokenClient from '@/lib/getTokenClient';
+import { Router } from 'next/router';
+
 
 const AddBookPage = () => {
   const router = useRouter();
@@ -44,10 +46,15 @@ const AddBookPage = () => {
   const handleSubmit = async e => {
     e.preventDefault();
 
-    const token = await getTokenClient();
     setLoading(true);
     setError('');
-
+    
+    const token = await getTokenClient();
+    if (!token) {
+      setError('Authentication failed. Please sign in again.');
+      setLoading(false);
+      return;
+    }
     const bookData = {
       ...formData,
       addedBy: {
@@ -57,7 +64,7 @@ const AddBookPage = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/books', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/books`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
