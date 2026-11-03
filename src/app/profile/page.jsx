@@ -4,7 +4,10 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
+
 import { authClient } from '@/lib/auth-client';
+import getTokenClient from '@/lib/getTokenClient';
 
 import {
   BookOpen,
@@ -33,9 +36,19 @@ const ProfilePage = () => {
 
     const fetchProfileData = async () => {
       try {
+        const token = await getTokenClient();
+
         const [booksResponse, borrowsResponse] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/books`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/borrows`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/books`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/borrows`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
         ]);
 
         if (!booksResponse.ok || !borrowsResponse.ok) {
@@ -57,6 +70,7 @@ const ProfilePage = () => {
         setBorrows(myBorrows);
       } catch (error) {
         console.error(error);
+        toast.error('Failed to load profile data.');
       } finally {
         setLoading(false);
       }
@@ -88,8 +102,8 @@ const ProfilePage = () => {
             <Image
               src="https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=1000&q=85"
               alt="Book"
-              width={1000}
-              height={600}
+              width={100}
+              height={100}
               loading="eager"
             />
 
