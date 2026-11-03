@@ -31,7 +31,7 @@ const MyBorrowsPage = () => {
 
     const fetchBorrows = async () => {
       const token = await getTokenClient();
-
+  console.log('Token exists:', Boolean(token));
       try {
         setLoading(true);
         setError('');
@@ -72,7 +72,7 @@ const MyBorrowsPage = () => {
     if (!selectedBorrow) return;
 
     const token = await getTokenClient();
-
+    console.log('Token exists:', Boolean(token));
     try {
       setReturning(true);
 
