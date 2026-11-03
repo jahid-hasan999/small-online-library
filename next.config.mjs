@@ -13,7 +13,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'i.pravatar.cc',
+        hostname: 'i.pinimg.com',
       },
     ],
   },

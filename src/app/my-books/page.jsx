@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { authClient } from '@/lib/auth-client';
-import Image from 'next/image';
+import SafeBookImage from '@/components/SafeBookImage';
 import getTokenClient from '@/lib/getTokenClient';
 import { toast } from 'react-toastify';
 
@@ -192,7 +192,7 @@ const MyBookPage = () => {
                 className="overflow-hidden rounded-xl bg-white shadow-sm"
               >
                 <div className="relative h-56 w-full">
-                  <Image
+                  <SafeBookImage
                     src={book.image}
                     alt={book.title}
                     fill

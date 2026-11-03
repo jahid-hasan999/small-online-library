@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 
@@ -25,6 +24,14 @@ const ProfilePage = () => {
   const [books, setBooks] = useState([]);
   const [borrows, setBorrows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+
+  const user = session?.user;
+
+  // Reset image error when profile image changes
+  useEffect(() => {
+    setImageError(false);
+  }, [user?.image]);
 
   useEffect(() => {
     if (isPending) return;
@@ -58,7 +65,6 @@ const ProfilePage = () => {
           console.error(
             `Profile Error: GET /books returned HTTP ${booksResponse.status}`,
           );
-          toast.error('Failed to load your added books.');
         }
 
         // Borrows (protected endpoint - requires a valid JWT)
@@ -74,16 +80,13 @@ const ProfilePage = () => {
           console.error(
             'Profile Error: GET /borrows returned 401 - session token was missing or rejected',
           );
-          toast.error('Could not verify your requests. Please sign in again.');
         } else {
           console.error(
             `Profile Error: GET /borrows returned HTTP ${borrowsResponse.status}`,
           );
-          toast.error('Failed to load your borrowed books.');
         }
       } catch (error) {
         console.error('Profile Error:', error);
-        toast.error('Failed to load profile data.');
       } finally {
         setLoading(false);
       }
@@ -104,27 +107,40 @@ const ProfilePage = () => {
 
   if (!session) return null;
 
-  const user = session.user;
+  const profileImage =
+    typeof user.image === 'string' &&
+    user.image.trim() !== '' &&
+    !user.image.toLowerCase().includes('pinterest.com');
 
   return (
     <section className="min-h-screen bg-[#F5F0E6] px-4 py-12">
       <div className="mx-auto max-w-5xl">
         {/* Profile Header */}
         <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-10">
-          <div className="flex flex-col items-center gap-5 sm:flex-row">
-            <Image
-              src="https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=1000&q=85"
-              alt="Book"
-              width={100}
-              height={100}
-              loading="eager"
-              className="w-auto h-auto"
-            />
+          <div className="flex min-w-0 items-center gap-4">
+            {/* Profile Image or First Letter */}
+            <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-2xl bg-gray-100 sm:h-[84px] sm:w-[84px]">
+              {profileImage && !imageError ? (
+                <img
+                  src={user.image}
+                  alt={user.name || 'Profile picture'}
+                  className="h-full w-full object-cover"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center rounded-2xl bg-[#173D35] text-4xl font-bold text-white">
+                  {user.name?.trim()?.charAt(0).toUpperCase() || 'U'}
+                </div>
+              )}
+            </div>
 
-            <div className="text-center sm:text-left">
-              <h1 className="text-3xl font-bold text-[#173D35]">{user.name}</h1>
+            {/* User Information */}
+            <div className="min-w-0 text-left">
+              <h1 className="text-3xl font-bold text-[#173D35]">
+                {user.name || 'User'}
+              </h1>
 
-              <p className="mt-2 text-gray-500">{user.email}</p>
+              <p className="mt-2 break-all text-gray-500">{user.email}</p>
 
               <span className="mt-3 inline-block rounded-full bg-[#e8f0e9] px-4 py-1 text-sm font-semibold text-[#173D35]">
                 BookNook Reader
@@ -181,7 +197,9 @@ const ProfilePage = () => {
           <div className="space-y-4">
             <div>
               <p className="text-sm text-gray-500">Full Name</p>
-              <p className="font-semibold text-[#252B29]">{user.name}</p>
+              <p className="font-semibold text-[#252B29]">
+                {user.name || 'User'}
+              </p>
             </div>
 
             <div>

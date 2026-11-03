@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import SafeBookImage from '@/components/SafeBookImage';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
@@ -236,7 +236,7 @@ const DetailsPage = ({ id }) => {
 
         {/* Book Image */}
         <div className="relative min-h-[350px]">
-          <Image
+          <SafeBookImage
             src={book.image}
             alt={book.title}
             fill

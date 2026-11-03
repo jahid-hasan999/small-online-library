@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeBookImage from '@/components/SafeBookImage';
 import { BookOpen } from 'lucide-react';
 
 const BooksPage = () => {
@@ -124,16 +124,14 @@ const BooksPage = () => {
               >
                 {/* Image */}
                 <div className="relative h-64 w-full bg-gray-100">
-                  {book.image && (
-                    <Image
-                      src={book.image}
-                      alt={book.title}
-                      fill
-                      unoptimized
-                      className="object-cover"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    />
-                  )}
+                  <SafeBookImage
+                    src={book.image}
+                    alt={book.title}
+                    fill
+                    unoptimized
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
                 </div>
 
                 {/* Book Information */}

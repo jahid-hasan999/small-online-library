@@ -1,20 +1,11 @@
+'use client';
 
-"use client";
+import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { authClient } from '@/lib/auth-client';
 
-import Link from "next/link";
-import Image from "next/image";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
-
-import {
-  BookOpen,
-  Menu,
-  X,
-  User,
-  LogOut,
-  ChevronDown,
-} from "lucide-react";
+import { BookOpen, Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
 
 const Navbar = () => {
   const router = useRouter();
@@ -23,13 +14,14 @@ const Navbar = () => {
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "All Books", href: "/books" },
-    { name: "Add Book", href: "/add-book", private: true },
-    { name: "My Books", href: "/my-books", private: true },
-    { name: "My Borrows", href: "/my-borrows", private: true },
+    { name: 'Home', href: '/' },
+    { name: 'All Books', href: '/books' },
+    { name: 'Add Book', href: '/add-book', private: true },
+    { name: 'My Books', href: '/my-books', private: true },
+    { name: 'My Borrows', href: '/my-borrows', private: true },
   ];
 
   const handleLogout = async () => {
@@ -38,16 +30,24 @@ const Navbar = () => {
     setProfileOpen(false);
     setMobileOpen(false);
 
-    router.push("/sign-in");
+    router.push('/sign-in');
     router.refresh();
   };
 
   const isLoggedIn = !!session?.user;
 
+  const user = session?.user;
+
+  const userImage =
+    typeof user?.image === 'string' &&
+    user.image.trim() !== '' &&
+    !user.image.toLowerCase().includes('pinterest.com');
+
+  const userInitial = user?.name?.trim()?.charAt(0).toUpperCase() || 'U';
+
   return (
     <header className="sticky top-0 z-50 border-b border-[#e7e1d5] bg-[#f5f0e6]/95 backdrop-blur-md">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8">
-
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#173d35] text-white">
@@ -62,8 +62,8 @@ const Navbar = () => {
         {/* Desktop Navigation */}
         <div className="hidden items-center gap-7 lg:flex">
           {navLinks
-            .filter((link) => isLoggedIn || !link.private)
-            .map((link) => (
+            .filter(link => isLoggedIn || !link.private)
+            .map(link => (
               <Link
                 key={link.name}
                 href={link.href}
@@ -98,17 +98,22 @@ const Navbar = () => {
                 onClick={() => setProfileOpen(!profileOpen)}
                 className="flex items-center gap-2 rounded-full border border-[#ded6c8] bg-white p-1.5 pr-3"
               >
-                <Image
-                  src={session.user.image || "https://i.pravatar.cc/100"}
-                  alt="User profile"
-                  width={36}
-                  height={36}
-                  unoptimized
-                  className="h-9 w-9 rounded-full object-cover"
-                />
+                {/* Profile Image or First Letter */}
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#173d35] text-sm font-bold text-white">
+                  {userImage && !imageError ? (
+                    <img
+                      src={user.image}
+                      alt="User profile"
+                      className="h-full w-full object-cover"
+                      onError={() => setImageError(true)}
+                    />
+                  ) : (
+                    userInitial
+                  )}
+                </div>
 
                 <span className="text-sm font-semibold text-[#173d35]">
-                  {session.user.name}
+                  {user.name || 'User'}
                 </span>
 
                 <ChevronDown size={16} />
@@ -118,11 +123,11 @@ const Navbar = () => {
                 <div className="absolute right-0 mt-3 w-52 rounded-xl border border-[#e7e1d5] bg-white p-2 shadow-xl">
                   <div className="border-b border-gray-100 px-3 py-2">
                     <p className="font-semibold text-[#173d35]">
-                      {session.user.name}
+                      {user.name || 'User'}
                     </p>
 
                     <p className="break-all text-xs text-gray-500">
-                      {session.user.email}
+                      {user.email}
                     </p>
                   </div>
 
@@ -163,8 +168,8 @@ const Navbar = () => {
         <div className="border-t border-[#e7e1d5] bg-[#f5f0e6] px-5 py-5 lg:hidden">
           <div className="flex flex-col gap-4">
             {navLinks
-              .filter((link) => isLoggedIn || !link.private)
-              .map((link) => (
+              .filter(link => isLoggedIn || !link.private)
+              .map(link => (
                 <Link
                   key={link.name}
                   href={link.href}
@@ -196,22 +201,25 @@ const Navbar = () => {
             ) : isLoggedIn ? (
               <>
                 <div className="flex items-center gap-3 border-t border-[#ded6c8] pt-4">
-                  <Image
-                    src={session.user.image || "https://i.pravatar.cc/100"}
-                    alt="User profile"
-                    width={40}
-                    height={40}
-                    unoptimized
-                    className="h-10 w-10 rounded-full object-cover"
-                  />
+                  {/* Mobile Profile Image or First Letter */}
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#173d35] text-base font-bold text-white">
+                    {userImage && !imageError ? (
+                      <img
+                        src={user.image}
+                        alt="User profile"
+                        className="h-full w-full object-cover"
+                        onError={() => setImageError(true)}
+                      />
+                    ) : (
+                      userInitial
+                    )}
+                  </div>
 
                   <div>
                     <p className="font-semibold text-[#173d35]">
-                      {session.user.name}
+                      {user.name || 'User'}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      {session.user.email}
-                    </p>
+                    <p className="text-xs text-gray-500">{user.email}</p>
                   </div>
                 </div>
 

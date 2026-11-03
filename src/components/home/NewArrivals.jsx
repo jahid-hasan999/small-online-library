@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeBookImage from '@/components/SafeBookImage';
 import { ArrowRight, BookOpen } from 'lucide-react';
 
 const NewArrivals = () => {
@@ -94,20 +94,14 @@ const NewArrivals = () => {
               >
                 {/* Book Image */}
                 <div className="relative h-[280px] overflow-hidden bg-[#e8e0d2]">
-                  {book.image ? (
-                    <Image
-                      src={book.image}
-                      alt={book.title}
-                      fill
-                      unoptimized
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover transition duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center">
-                      <BookOpen size={50} className="text-[#173D35]" />
-                    </div>
-                  )}
+                  <SafeBookImage
+                    src={book.image}
+                    alt={book.title}
+                    fill
+                    unoptimized
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                  />
 
                   <span className="absolute left-4 top-4 rounded-full bg-[#173D35] px-4 py-2 text-xs font-semibold text-white">
                     {book.category}

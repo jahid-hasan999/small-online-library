@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import SafeBookImage from '@/components/SafeBookImage';
 import { authClient } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import getTokenClient from '@/lib/getTokenClient';
@@ -162,7 +162,7 @@ const MyBorrowsPage = () => {
               >
                 <div className="flex items-center gap-4">
                   <div className="relative h-24 w-16 shrink-0">
-                    <Image
+                    <SafeBookImage
                       src={borrow.bookImage}
                       alt={borrow.bookTitle}
                       fill
@@ -218,7 +218,7 @@ const MyBorrowsPage = () => {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className="relative h-16 w-12 shrink-0">
-                          <Image
+                          <SafeBookImage
                             src={borrow.bookImage}
                             alt={borrow.bookTitle}
                             fill
