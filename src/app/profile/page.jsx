@@ -38,38 +38,51 @@ const ProfilePage = () => {
       try {
         const token = await getTokenClient();
 
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
         const [booksResponse, borrowsResponse] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/books`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/borrows`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/books`, { headers }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/borrows`, { headers }),
         ]);
 
-        if (!booksResponse.ok || !borrowsResponse.ok) {
-          throw new Error('Failed to load profile data');
+        // Books (public endpoint)
+        if (booksResponse.ok) {
+          const booksData = await booksResponse.json();
+
+          setBooks(
+            booksData.filter(
+              book => book.addedBy?.email === session.user.email,
+            ),
+          );
+        } else {
+          console.error(
+            `Profile Error: GET /books returned HTTP ${booksResponse.status}`,
+          );
+          toast.error('Failed to load your added books.');
         }
 
-        const booksData = await booksResponse.json();
-        const borrowsData = await borrowsResponse.json();
+        // Borrows (protected endpoint - requires a valid JWT)
+        if (borrowsResponse.ok) {
+          const borrowsData = await borrowsResponse.json();
 
-        const myBooks = booksData.filter(
-          book => book.addedBy?.email === session.user.email,
-        );
-
-        const myBorrows = borrowsData.filter(
-          borrow => borrow.userEmail === session.user.email,
-        );
-
-        setBooks(myBooks);
-        setBorrows(myBorrows);
+          setBorrows(
+            borrowsData.filter(
+              borrow => borrow.userEmail === session.user.email,
+            ),
+          );
+        } else if (borrowsResponse.status === 401) {
+          console.error(
+            'Profile Error: GET /borrows returned 401 - session token was missing or rejected',
+          );
+          toast.error('Could not verify your requests. Please sign in again.');
+        } else {
+          console.error(
+            `Profile Error: GET /borrows returned HTTP ${borrowsResponse.status}`,
+          );
+          toast.error('Failed to load your borrowed books.');
+        }
       } catch (error) {
-        console.error(error);
+        console.error('Profile Error:', error);
         toast.error('Failed to load profile data.');
       } finally {
         setLoading(false);
@@ -105,6 +118,7 @@ const ProfilePage = () => {
               width={100}
               height={100}
               loading="eager"
+              className="w-auto h-auto"
             />
 
             <div className="text-center sm:text-left">
