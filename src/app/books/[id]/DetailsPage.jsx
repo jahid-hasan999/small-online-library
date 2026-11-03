@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -5,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
+import getTokenClient from '@/lib/getTokenClient';
 
 const DetailsPage = ({ id }) => {
   const router = useRouter();
@@ -24,61 +26,133 @@ const DetailsPage = ({ id }) => {
 
   // Fetch book details
   useEffect(() => {
+    if (isPending) return;
+
+    let cancelled = false;
+
     const fetchBook = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/books/${id}`);
+        setLoading(true);
+
+        const token = await getTokenClient();
+
+        if (!token) {
+          throw new Error('Token not found');
+        }
+
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
 
         if (!response.ok) {
           throw new Error('Book not found');
         }
 
         const data = await response.json();
-        setBook(data);
+
+        if (!cancelled) {
+          setBook(data);
+          setError('');
+        }
       } catch (error) {
-        console.error(error);
-        setError('Failed to load book details.');
+        console.error('Fetch Book Error:', error);
+
+        if (!cancelled) {
+          setError('Failed to load book details.');
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     fetchBook();
-  }, [id]);
 
-  // Check if book is already borrowed
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isPending, session?.user?.email]);
+
+  // Check if current user already borrowed this book
   useEffect(() => {
+    if (isPending) return;
+
+    if (!session?.user?.email) {
+      setCheckingBorrow(false);
+      setAlreadyBorrowed(false);
+      return;
+    }
+
+    let cancelled = false;
+
     const checkBorrowStatus = async () => {
       try {
         setCheckingBorrow(true);
 
-        const response = await fetch('http://localhost:5000/borrows');
+        const token = await getTokenClient();
+
+        if (!token) {
+          throw new Error('Token not found');
+        }
+
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/borrows`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
 
         if (!response.ok) {
           throw new Error('Failed to check borrow status');
         }
 
-        const data = await response.json();
+        const borrows = await response.json();
 
-        const isBorrowed = data.some(borrow => borrow.bookId === id);
+        const isBorrowed = borrows.some(
+          (borrow) =>
+            String(borrow.bookId) === String(id) &&
+            borrow.userEmail === session.user.email
+        );
 
-        setAlreadyBorrowed(isBorrowed);
+        if (!cancelled) {
+          setAlreadyBorrowed(isBorrowed);
+        }
       } catch (error) {
-        console.error(error);
-        setMessage('Could not check book availability.');
+        console.error('Borrow Status Error:', error);
+
+        if (!cancelled) {
+          setMessage('Could not check book availability.');
+        }
       } finally {
-        setCheckingBorrow(false);
+        if (!cancelled) {
+          setCheckingBorrow(false);
+        }
       }
     };
 
     checkBorrowStatus();
-  }, [id]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, session?.user?.email, isPending]);
 
   // Open Borrow Modal
   const handleBorrowClick = () => {
     if (isPending || checkingBorrow) return;
 
-    if (!session) {
-      router.push(`/sign-in?callbackURL=${encodeURIComponent(`/books/${id}`)}`);
+    if (!session?.user) {
+      router.push(
+        `/sign-in?callbackURL=${encodeURIComponent(`/books/${id}`)}`
+      );
       return;
     }
 
@@ -96,18 +170,28 @@ const DetailsPage = ({ id }) => {
       setBorrowing(true);
       setMessage('');
 
-      const response = await fetch('http://localhost:5000/borrows', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const token = await getTokenClient();
+
+      if (!token) {
+        throw new Error('Token not found');
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/borrows`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            bookId: book._id,
+            bookTitle: book.title,
+            bookImage: book.image,
+            userEmail: session.user.email,
+          }),
         },
-        body: JSON.stringify({
-          bookId: book._id,
-          bookTitle: book.title,
-          bookImage: book.image,
-          userEmail: session.user.email,
-        }),
-      });
+      );
 
       const data = await response.json();
 
@@ -125,14 +209,14 @@ const DetailsPage = ({ id }) => {
 
       alert('Book borrowed successfully!');
     } catch (error) {
-      console.error(error);
+      console.error('Confirm Borrow Error:', error);
       setMessage(error.message || 'Something went wrong!');
     } finally {
       setBorrowing(false);
     }
   };
 
-  if (loading) {
+  if (loading || isPending) {
     return <p className="py-20 text-center">Loading...</p>;
   }
 
@@ -147,6 +231,7 @@ const DetailsPage = ({ id }) => {
   return (
     <section className="min-h-screen bg-[#F5F0E6] px-4 py-12">
       <div className="mx-auto grid max-w-5xl gap-10 rounded-3xl bg-white p-6 shadow-lg md:grid-cols-2">
+
         {/* Book Image */}
         <div className="relative min-h-[350px]">
           <Image
@@ -168,25 +253,41 @@ const DetailsPage = ({ id }) => {
             {book.title}
           </h1>
 
-          <p className="mt-3 text-gray-600">Author: {book.author}</p>
+          <p className="mt-3 text-gray-600">
+            Author: {book.author}
+          </p>
 
-          <h2 className="mt-7 text-lg font-bold text-[#173D35]">Description</h2>
+          <h2 className="mt-7 text-lg font-bold text-[#173D35]">
+            Description
+          </h2>
 
-          <p className="mt-2 leading-7 text-gray-600">{book.description}</p>
+          <p className="mt-2 leading-7 text-gray-600">
+            {book.description}
+          </p>
 
           {/* Added By */}
           <div className="mt-7 border-t pt-5">
-            <h2 className="font-bold text-[#173D35]">Added By</h2>
+            <h2 className="font-bold text-[#173D35]">
+              Added By
+            </h2>
 
-            <p className="mt-2 text-gray-600">{book.addedBy?.name}</p>
+            <p className="mt-2 text-gray-600">
+              {book.addedBy?.name}
+            </p>
 
-            <p className="text-sm text-gray-500">{book.addedBy?.email}</p>
+            <p className="text-sm text-gray-500">
+              {book.addedBy?.email}
+            </p>
           </div>
 
           {/* Borrow Button */}
           <button
             onClick={handleBorrowClick}
-            disabled={isPending || checkingBorrow || alreadyBorrowed}
+            disabled={
+              isPending ||
+              checkingBorrow ||
+              alreadyBorrowed
+            }
             className="mt-8 block w-full rounded-xl bg-[#173D35] px-6 py-4 text-center font-semibold text-white hover:bg-[#D5A85C] hover:text-[#173D35] disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-white"
           >
             {checkingBorrow
@@ -199,7 +300,9 @@ const DetailsPage = ({ id }) => {
           </button>
 
           {message && !showModal && (
-            <p className="mt-3 text-center text-sm text-red-500">{message}</p>
+            <p className="mt-3 text-center text-sm text-red-500">
+              {message}
+            </p>
           )}
 
           <Link
@@ -215,6 +318,7 @@ const DetailsPage = ({ id }) => {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+
             <h2 className="text-2xl font-bold text-[#173D35]">
               Borrow This Book
             </h2>
@@ -224,6 +328,7 @@ const DetailsPage = ({ id }) => {
             </p>
 
             <div className="mt-6 space-y-4">
+
               <div>
                 <label className="mb-2 block font-medium text-gray-700">
                   Your Name
@@ -268,9 +373,14 @@ const DetailsPage = ({ id }) => {
                 earlier.
               </p>
 
-              {message && <p className="text-sm text-red-500">{message}</p>}
+              {message && (
+                <p className="text-sm text-red-500">
+                  {message}
+                </p>
+              )}
 
               <div className="flex gap-3 pt-3">
+
                 <button
                   onClick={() => setShowModal(false)}
                   disabled={borrowing}
@@ -286,6 +396,7 @@ const DetailsPage = ({ id }) => {
                 >
                   {borrowing ? 'Borrowing...' : 'Confirm Borrow'}
                 </button>
+
               </div>
             </div>
           </div>

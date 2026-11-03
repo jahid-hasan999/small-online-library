@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { authClient } from '@/lib/auth-client';
 import Image from 'next/image';
+import getTokenClient from '@/lib/getTokenClient';
 
 const MyBookPage = () => {
   const { data: session, isPending } = authClient.useSession();
@@ -33,8 +34,17 @@ const MyBookPage = () => {
     }
 
     const fetchMyBooks = async () => {
+      
+      const token = await getTokenClient();
       try {
-        const response = await fetch('http://localhost:5000/books');
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/books`,
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+          },
+        );
 
         if (!response.ok) {
           throw new Error('Failed to fetch books');
@@ -81,16 +91,17 @@ const MyBookPage = () => {
   // Save Updated Book
   const handleUpdate = async e => {
     e.preventDefault();
-
+    const token = await getTokenClient();
     try {
       setSaving(true);
 
       const response = await fetch(
-        `http://localhost:5000/books/${editingBook._id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/books/${editingBook._id}`,
         {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
+            authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(editForm),
         },
@@ -116,13 +127,17 @@ const MyBookPage = () => {
   };
 
   const handleDelete = async () => {
+    const token = await getTokenClient();
     try {
       setDeleting(true);
 
       const response = await fetch(
-        `http://localhost:5000/books/${deletingBook._id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/books/${deletingBook._id}`,
         {
           method: 'DELETE',
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
         },
       );
 

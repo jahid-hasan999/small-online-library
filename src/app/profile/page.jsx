@@ -34,8 +34,8 @@ const ProfilePage = () => {
     const fetchProfileData = async () => {
       try {
         const [booksResponse, borrowsResponse] = await Promise.all([
-          fetch('http://localhost:5000/books'),
-          fetch('http://localhost:5000/borrows'),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/books`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/borrows`),
         ]);
 
         if (!booksResponse.ok || !borrowsResponse.ok) {

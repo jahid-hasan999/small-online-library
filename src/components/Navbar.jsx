@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
@@ -97,9 +98,12 @@ const Navbar = () => {
                 onClick={() => setProfileOpen(!profileOpen)}
                 className="flex items-center gap-2 rounded-full border border-[#ded6c8] bg-white p-1.5 pr-3"
               >
-                <img
+                <Image
                   src={session.user.image || "https://i.pravatar.cc/100"}
                   alt="User profile"
+                  width={36}
+                  height={36}
+                  unoptimized
                   className="h-9 w-9 rounded-full object-cover"
                 />
 
@@ -192,9 +196,12 @@ const Navbar = () => {
             ) : isLoggedIn ? (
               <>
                 <div className="flex items-center gap-3 border-t border-[#ded6c8] pt-4">
-                  <img
+                  <Image
                     src={session.user.image || "https://i.pravatar.cc/100"}
                     alt="User profile"
+                    width={40}
+                    height={40}
+                    unoptimized
                     className="h-10 w-10 rounded-full object-cover"
                   />
 

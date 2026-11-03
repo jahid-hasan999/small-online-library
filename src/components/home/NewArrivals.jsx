@@ -14,7 +14,9 @@ const NewArrivals = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const response = await fetch('http://localhost:5000/books?limit=6');
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/books?limit=6`,
+        );
 
         if (!response.ok) {
           throw new Error('Failed to fetch books');

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -26,7 +26,8 @@ export default function SignUpPage() {
    const formData = new FormData(e.currentTarget);
 
    const name = formData.get('name');
-   const image = formData.get('image');
+   const imageUrl = formData.get('image');
+   const image = imageUrl?.trim() || undefined;
    const email = formData.get('email');
    const password = formData.get('password');
 
@@ -85,7 +86,7 @@ export default function SignUpPage() {
                   type="button"
                   onClick={handleGoogleSignup}
                 >
-                  Login with Google
+                  Sign In with Google
                 </Button>
               </Field>
 

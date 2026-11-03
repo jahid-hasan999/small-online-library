@@ -6,6 +6,7 @@ import { BookPlus, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 import { authClient } from '@/lib/auth-client';
+import getTokenClient from '@/lib/getTokenClient';
 
 const AddBookPage = () => {
   const router = useRouter();
@@ -32,7 +33,7 @@ const AddBookPage = () => {
   // Input value handle
   const handleChange = e => {
     const { name, value } = e.target;
-
+  
     setFormData({
       ...formData,
       [name]: value,
@@ -43,6 +44,7 @@ const AddBookPage = () => {
   const handleSubmit = async e => {
     e.preventDefault();
 
+    const token = await getTokenClient();
     setLoading(true);
     setError('');
 
@@ -59,6 +61,7 @@ const AddBookPage = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(bookData),
       });
