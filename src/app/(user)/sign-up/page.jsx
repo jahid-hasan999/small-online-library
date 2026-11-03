@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 
+import { toast } from 'react-toastify';
+
 import { authClient } from '@/lib/auth-client';
 
 export default function SignUpPage() {
@@ -32,17 +34,17 @@ export default function SignUpPage() {
    const password = formData.get('password');
 
    if (password.length < 6) {
-     alert('Password must be at least 6 characters!');
+     toast.error('Password must be at least 6 characters!');
      return;
    }
 
    if (!/[A-Z]/.test(password)) {
-     alert('Password must contain an uppercase letter!');
+     toast.error('Password must contain an uppercase letter!');
      return;
    }
 
    if (!/[a-z]/.test(password)) {
-     alert('Password must contain a lowercase letter!');
+     toast.error('Password must contain a lowercase letter!');
      return;
    }
 

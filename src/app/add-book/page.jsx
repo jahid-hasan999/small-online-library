@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { BookPlus, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
+import { toast } from 'react-toastify';
+
 import { authClient } from '@/lib/auth-client';
 import getTokenClient from '@/lib/getTokenClient';
 
@@ -76,7 +78,7 @@ const AddBookPage = () => {
         throw new Error('Failed to add book');
       }
 
-      alert('Book added successfully!');
+      toast.success('Book added successfully!');
 
       setFormData({
         title: '',

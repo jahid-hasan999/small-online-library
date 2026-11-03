@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { authClient } from '@/lib/auth-client';
 import Image from 'next/image';
 import getTokenClient from '@/lib/getTokenClient';
+import { toast } from 'react-toastify';
 
 const MyBookPage = () => {
   const { data: session, isPending } = authClient.useSession();
@@ -118,9 +119,9 @@ const MyBookPage = () => {
       );
 
       setEditingBook(null);
-      alert('Book updated successfully!');
+      toast.success('Book updated successfully!');
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setSaving(false);
     }
@@ -150,9 +151,9 @@ const MyBookPage = () => {
       );
 
       setDeletingBook(null);
-      alert('Book deleted successfully!');
+      toast.success('Book deleted successfully!');
     } catch (error) {
-      alert(error.message);
+      toast.error(error.message);
     } finally {
       setDeleting(false);
     }

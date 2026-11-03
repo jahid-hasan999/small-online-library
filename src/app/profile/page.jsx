@@ -85,10 +85,12 @@ const ProfilePage = () => {
         {/* Profile Header */}
         <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-10">
           <div className="flex flex-col items-center gap-5 sm:flex-row">
-            <img
-              src={user.image || 'https://i.pravatar.cc/150'}
-              alt={user.name}
-              className="h-24 w-24 rounded-full border-4 border-[#F5F0E6] object-cover"
+            <Image
+              src="https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=1000&q=85"
+              alt="Book"
+              width={1000}
+              height={600}
+              loading="eager"
             />
 
             <div className="text-center sm:text-left">

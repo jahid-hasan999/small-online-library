@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { authClient } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import getTokenClient from '@/lib/getTokenClient';
+import { toast } from 'react-toastify';
 
 const MyBorrowsPage = () => {
   const router = useRouter();
@@ -98,7 +99,7 @@ const MyBorrowsPage = () => {
         previous.filter(borrow => borrow._id !== selectedBorrow._id),
       );
 
-      setSelectedBorrow(null);
+     toast(" return successfuly")&& setSelectedBorrow(null);
     } catch (error) {
       console.error(error);
       setError('Failed to return book. Please try again.');

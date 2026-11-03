@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
+
 import { authClient } from '@/lib/auth-client';
 import getTokenClient from '@/lib/getTokenClient';
 
@@ -41,7 +43,7 @@ const DetailsPage = ({ id }) => {
         }
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/${id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/books/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -207,7 +209,7 @@ const DetailsPage = ({ id }) => {
       setAlreadyBorrowed(true);
       setShowModal(false);
 
-      alert('Book borrowed successfully!');
+      toast.success('Book borrowed successfully!');
     } catch (error) {
       console.error('Confirm Borrow Error:', error);
       setMessage(error.message || 'Something went wrong!');
